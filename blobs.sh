@@ -30,12 +30,12 @@ while read p; do
             fi
             filename="${file##*/}"
             filedir="${file/\/$filename/}"
-            mkdir -p $filedir
             urlfile="${file/@/%40}"
             if [ $dump == "false" ]; then
                 if [ -f $file ]; then
                     rm -rf $file
                 fi
+		mkdir -p $filedir
                 wget -q --show-progress $1/$urlfile -O $file
             else
                 dumpfile="$(cat temp.txt | grep $file)"
@@ -56,6 +56,7 @@ while read p; do
                     if [ -f $file ]; then
                         rm -rf $file
                     fi
+		    mkdir -p $filedir
                     wget -q --show-progress $1/$dumpfile -O $file
                 fi
             fi
