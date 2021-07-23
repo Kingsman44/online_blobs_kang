@@ -1,4 +1,5 @@
 error=0
+path=vendor/mido/proprietary/
 rm -rf temp.txt
 if [ ! -z "$(echo $@ | grep -- '-dump')" ]; then
     dump=true
@@ -30,13 +31,16 @@ while read p; do
             fi
             filename="${file##*/}"
             filedir="${file/\/$filename/}"
+            mkdir -p $path$filedir
             urlfile="${file/@/%40}"
             if [ $dump == "false" ]; then
-                if [ -f $file ]; then
-                    rm -rf $file
+                if [ -f $path$file ]; then
+                    rm -rf $path$file
                 fi
-		mkdir -p $filedir
-                wget -q --show-progress $1/$urlfile -O $file
+                wget -q --show-progress $1/$urlfile -O $path$file
+                if [ ! -z "$(echo $file | grep 'bin/')" ]; then
+                    chmod 0755 $path$file
+                fi
             else
                 dumpfile="$(cat temp.txt | grep $file)"
                 if [ -z "$dumpfile" ]; then
@@ -53,11 +57,13 @@ while read p; do
                     fi
                 fi
                 if [ $error -eq 0 ]; then
-                    if [ -f $file ]; then
-                        rm -rf $file
+                    if [ -f $path$file ]; then
+                        rm -rf $path$file
                     fi
-		    mkdir -p $filedir
-                    wget -q --show-progress $1/$dumpfile -O $file
+                    wget -q --show-progress $1/$dumpfile -O $path$file
+		    if [ ! -z "$(echo $file | grep 'bin/')" ]; then
+                        chmod 0755 $path$file
+                    fi
                 fi
             fi
         fi
