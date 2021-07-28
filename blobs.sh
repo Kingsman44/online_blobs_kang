@@ -1,4 +1,3 @@
-#path="../vendor/mido/proprietary/"
 path=""
 error=0
 if [ ! -z "$1" ]; then
