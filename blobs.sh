@@ -1,3 +1,4 @@
+#path="../vendor/mido/proprietary/"
 path=""
 error=0
 if [ ! -z "$1" ]; then
@@ -7,7 +8,7 @@ if [ ! -z "$1" ]; then
     else
         force=0
     fi
-
+    para=${@/$1/}
     url=$1
     repo="${url##*/}"
     branch="$(curl --silent $1 | grep .zip | grep href=)"
@@ -17,9 +18,19 @@ if [ ! -z "$1" ]; then
     branch=$(echo $branch | cut -d\" -f1)
     branch="${branch/.zip/}"
     #echo $branch
+    if [ ! -z "$(echo "$para" | grep -- '-b ')" ]; then
+        branch="${para##*-b }"
+        branch=$(echo $branch | cut -d' ' -f1)
+	echo $branch
+        if [ -z $branch ]; then
+            echo "Error: No branch name if given"
+            error=1
+        fi
+    fi
+
     if [ -z $branch ] && [ $force -eq 0 ]; then
         echo "Invalid link"
-        echo "If you think, link is valid use --force"
+        echo "If you think, link is valid use --force tag"
         error=1
     fi
 
@@ -46,7 +57,7 @@ if [ ! -z "$1" ]; then
             dump=true
         elif [ ! -z "$(echo "$@" | grep -- '--force')" ]; then
             dump=false
-        elif [ ! -z "$2" ]; then
+        elif [ ! -z "$2" ] && [ "$(echo $2 | head -c 1)" != "-" ]; then
             rm -rf temp.txt
             #echo "yes"
             wget -q $rawlink/$2/$2-vendor.mk -O temp.txt
@@ -86,7 +97,6 @@ if [ ! -z "$1" ]; then
                     fi
                     filename="${file##*/}"
                     filedir="${file/\/$filename/}"
-                    mkdir -p $path$filedir
                     urlfile="${file/@/%40}"
                     if [ $dump == "true" ]; then
                         dumpfile="proprietary/$(cat temp.txt | grep $file | cut -d: -f1)"
@@ -113,6 +123,7 @@ if [ ! -z "$1" ]; then
                             if [ -f $path$file ]; then
                                 rm -rf $path$file
                             fi
+                            mkdir -p $path$filedir
                             wget -q --show-progress $rawlink/$fold$dumpfile -O $path$file
                             if [ ! -z "$(echo $file | grep 'bin/')" ]; then
                                 chmod 0755 $path$file
@@ -135,4 +146,4 @@ if [ ! -z "$1" ]; then
 else
     echo "Error: link not specified"
 fi
-#rm -rf temp.txt
+rm -rf temp.txt
