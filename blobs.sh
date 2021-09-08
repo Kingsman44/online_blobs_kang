@@ -1,3 +1,4 @@
+#path="../vendor/mido/proprietary/"
 path=""
 error=0
 if [ ! -z "$1" ]; then
@@ -45,7 +46,7 @@ if [ ! -z "$1" ]; then
         #echo $rawlink
         fold=""
         rm -rf temp.txt
-
+	rm -rf temp.bp
         wget -q $rawlink/all_files.txt -O temp.txt
         if [ -z "$(cat temp.txt)" ]; then
             rm -rf temp.txt
@@ -60,6 +61,7 @@ if [ ! -z "$1" ]; then
             rm -rf temp.txt
             #echo "yes"
             wget -q $rawlink/$2/$2-vendor.mk -O temp.txt
+	    wget -q $rawlink/$2/Android.bp -O temp.bp
             dump=true
             if [ -z "$(cat temp.txt)" ]; then
                 error=1
@@ -104,11 +106,15 @@ if [ ! -z "$1" ]; then
                         dumpfile="${dumpfile##*proprietary/}"
                         #echo $dumpfile
                         if [ -z "$dumpfile" ]; then
-                            if [ ! -z "$file2" ]; then
-                                if [ ! -z "$(cat temp.txt | grep $file2 | cut -d: -f1)"]; then
+			    if [ ! -z "$(cat temp.bp | grep $file | cut -d: -f1)" ]; then
+                                    dumpfile="$file"
+                            elif [ ! -z "$file2" ]; then
+                                if [ ! -z "$(cat temp.txt | grep $file2 | cut -d: -f1)" ]; then
                                     dumpfile="proprietary/$(cat temp.txt | grep $file2 | cut -d: -f1)"
                                     dumpfile="${dumpfile/ /}"
                                     dumpfile="${dumpfile##*proprietary/}"
+				elif [ ! -z "$(cat temp.bp | grep $file2 | cut -d: -f1)" ]; then
+				    dumpfile="$file2"
                                 else
                                     echo "Cannot find file $file"
                                     error=1
@@ -146,3 +152,4 @@ else
     echo "Error: link not specified"
 fi
 rm -rf temp.txt
+rm -rf temp.bp
