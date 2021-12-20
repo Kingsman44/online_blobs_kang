@@ -1,4 +1,4 @@
-#path="../vendor/mido/proprietary/"
+path="../vendor/mido/proprietary/"
 path=""
 error=0
 if [ ! -z "$1" ]; then
@@ -11,17 +11,13 @@ if [ ! -z "$1" ]; then
     para=${@/$1/}
     url=$1
     repo="${url##*/}"
-    branch="$(curl --silent $1 | grep .zip | grep href=)"
-    branch="${branch/<\/a>/}"
-    branch="${branch##*/}"
-    branch="${branch/$repo-/}"
-    branch=$(echo $branch | cut -d\" -f1)
-    branch="${branch/.zip/}"
-    #echo $branch
+    branch="$(git remote show $1 | grep 'HEAD branch:' | cut -d: -f2)"
+    branch="${branch// /}"
+    echo "Detected Branch: $branch"
     if [ ! -z "$(echo "$para" | grep -- '-b ')" ]; then
         branch="${para##*-b }"
         branch=$(echo $branch | cut -d' ' -f1)
-	echo $branch
+	echo "Given Branch: $branch"
         if [ -z $branch ]; then
             echo "Error: No branch name if given"
             error=1
@@ -74,6 +70,9 @@ if [ ! -z "$1" ]; then
             echo "Error: Link is not valid dump or device not given"
         fi
     fi
+   if [ ! -f temp.bp ]; then
+   touch temp.bp
+   fi
     if [ $error -eq 0 ]; then
         while read p; do
             if [ ! -z "$(echo $p)" ]; then
